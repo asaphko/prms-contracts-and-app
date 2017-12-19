@@ -1,9 +1,10 @@
-# prms-contracts-and-app
-Promise (PRMS) Solidity code for Token and Smart Contracts
+# promise-contracts
+Promise (Token: WORD) is a blockchain reputation token written in Solidity.
+http://promiseto.me
 
 How to play?
 
-- a Promiser makes a promise to a promisee: 
+- a Promiser makes a promise to a promisee:
 "I promise to [promisee] that [the promise description] until [expiry] with [amount] PMRS tokens".
 
 - Promisee can accept or reject.
@@ -22,4 +23,3 @@ if agreed - the tokens are sent to the promisee, but the PromiseGenie keeps 10% 
 
 - Promise could get burned!
 if a promise is disputed for 7 days without resolution - the PromiseGenie burns all the tokens and no one wins!
-
