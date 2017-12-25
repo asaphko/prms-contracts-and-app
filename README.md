@@ -1,6 +1,6 @@
 # promise-contracts
-Promise (Token: WORD) is a blockchain reputation token written in Solidity.
-http://promiseto.me
+Promise is a blockchain reputation token (Symbol: WORD) written in Solidity.
+See http://promiseto.me for more info.
 
 How to play?
 

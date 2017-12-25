@@ -232,8 +232,8 @@ contract PromiseToken is MintableToken, BurnableToken {
   function promiseKept(address promiser, address promisee, uint _value) onlyCore public returns (bool) {
     balances[promiser] = balances[promiser].add(_value);
     balances[genieAddress] = balances[genieAddress].sub(_value);
-    promiseMint(promiser, _value/50*mintPercent);
-    promiseMint(promisee, _value/50*mintPercent);
+    promiseMint(promiser, _value/200*mintPercent);
+    promiseMint(promisee, _value/200*mintPercent);
     return true;
   }
 
@@ -248,10 +248,6 @@ contract PromiseToken is MintableToken, BurnableToken {
     balances[genieAddress] = balances[genieAddress].sub(_value);
     totalSupply = totalSupply.sub(_value);
     Burn(genieAddress, _value);
-  }
-
-  function remove() onlyOwner public {
-    selfdestruct(owner);
   }
 
 }

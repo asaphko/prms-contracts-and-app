@@ -18,16 +18,47 @@ contract PromiseCollection {
 
 }
 
-contract PromiseManager is Ownable, PromiseCollection {
+contract Promises is Ownable {
 
-  enum PromiseStatus { Created, Accepted, Rejected, Disputed, Broken, Burned, Kept }
+  struct PromiseAssociation {
+    bytes32[] sentPromises;
+    bytes32[] receivedPromises;
+  }
+
+  mapping(address => PromiseAssociation) promiseAssociations;
+
+  function addSentPromise(address account, bytes32 referenceCode) public {
+    promiseAssociations[account].sentPromises.push(referenceCode);
+  }
+
+  function getSentPromise(address account, uint index) public constant returns (bytes32) {
+    require(account != 0x0 && index >= 0 && index < promiseAssociations[account].sentPromises.length);
+
+    return promiseAssociations[account].sentPromises[index];
+  }
+
+  function addReceivedPromise(address account, bytes32 referenceCode) public {
+    promiseAssociations[account].receivedPromises.push(referenceCode);
+  }
+
+  function getReceivedPromise(address account, uint index) public constant returns (bytes32) {
+    require(account != 0x0 && index >= 0 && index < promiseAssociations[account].receivedPromises.length);
+
+    return promiseAssociations[account].receivedPromises[index];
+  }
+
+  function getCounts(address account) public constant returns (uint sentPromisesCount, uint receivedPromisesCount) {
+    PromiseAssociation memory promiseAssociation = promiseAssociations[account];
+    return (promiseAssociation.sentPromises.length, promiseAssociation.receivedPromises.length);
+  }
+}
+
+contract PromiseManager is Ownable, PromiseCollection, Promises {
+
+  enum PromiseStatus { Created, Cancelled, Accepted, Rejected, Disputed, Broken, Burned, Kept }
   PromiseStatus constant DEFAULT_PROMISE_STATUS = PromiseStatus.Created;
 
   address public coreAddress;
-
-  function PromiseToken() public {
-    coreAddress = msg.sender;
-  }
 
   function setCoreAddress(address newAddress) onlyOwner public returns(bool) {
     coreAddress = newAddress;
@@ -46,7 +77,7 @@ contract PromiseManager is Ownable, PromiseCollection {
   }
 
   /**
-   * @dev Throws if called by any account other than the coreAddress (PromiseRegister)
+   * @dev Throws if called by any account other than the coreAddress (PromiseGenie)
    */
   modifier onlyCore() {
     require(msg.sender == coreAddress);
@@ -59,8 +90,8 @@ contract PromiseManager is Ownable, PromiseCollection {
     if (keys.length == 0) {
       return false;
     }
-      return (promises[key].isValue);
-    }
+    return (promises[key].isValue);
+  }
 
   function insert(bytes32 referenceCode, uint issueDate, uint expiryDate, address promiser, address promisee, uint amount, bytes32 description) onlyCore public returns(uint index) {
     require(!exists(referenceCode));
@@ -81,6 +112,12 @@ contract PromiseManager is Ownable, PromiseCollection {
     return super.addKey(referenceCode);
   }
 
+  function getByIndex(uint index) onlyCore public constant returns(bytes32, uint, uint, address, address, uint, bytes32, PromiseStatus) {
+    require(index >= 0 && index < keys.length);
+
+    return getByReferenceCode(keys[index]);
+  }
+
   function getByReferenceCode(bytes32 referenceCode) onlyCore public constant returns(bytes32, uint, uint, address, address, uint, bytes32, PromiseStatus) {
     require(exists(referenceCode));
 
@@ -95,7 +132,7 @@ contract PromiseManager is Ownable, PromiseCollection {
 
     Promise memory promise = promises[referenceCode];
     if (promise.status == PromiseManager.PromiseStatus.Created) {
-      require(status == PromiseStatus.Accepted || status == PromiseStatus.Rejected);
+      require(status == PromiseStatus.Accepted || status == PromiseStatus.Rejected || status == PromiseStatus.Cancelled);
       //todo: require answer within X hours, otherwise cancel promise.
     } else {
       if (promise.status == PromiseManager.PromiseStatus.Accepted) {
@@ -113,10 +150,6 @@ contract PromiseManager is Ownable, PromiseCollection {
 
     promises[referenceCode].status = status;
     return true;
-  }
-
-  function remove() onlyOwner public {
-    selfdestruct(owner);
   }
 
 }

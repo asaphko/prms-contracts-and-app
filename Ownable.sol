@@ -20,4 +20,8 @@ contract Ownable {
     owner = newOwner;
   }
 
+  function remove() onlyOwner public {
+      selfdestruct(owner);
+  }
+
 }
